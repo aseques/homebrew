@@ -7,12 +7,16 @@ class Calligra < Formula
 
   depends_on 'cmake' => :build
   depends_on 'kdelibs' => :build
+  depends_on 'eigen' => :build
+  depends_on 'lcms2' => :build
 
   def install
     system "sh initrepo.sh"
+    mkdir '../build'
+    cd '../build'
 
     #We only build creative tools (krita and karbon)
-    system "cmake . #{std_cmake_parameters} -DCREATIVEONLY=ON"
+    system "cmake ../calligra #{std_cmake_parameters} -DCREATIVEONLY=ON -DEIGEN2_INCLUDE_DIR='/usr/local/Cellar/eigen/3.0.5/include/eigen3/'"
     system "make install" # if this fails, try separate make/make install steps
   end
 
