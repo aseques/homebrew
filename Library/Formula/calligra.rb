@@ -16,7 +16,7 @@ class Calligra < Formula
     cd '../build'
 
     #We only build creative tools (krita and karbon)
-    system "cmake ../calligra #{std_cmake_parameters} -DCREATIVEONLY=ON -DEIGEN2_INCLUDE_DIR='/usr/local/Cellar/eigen/3.0.5/include/eigen3/'"
+    system "cmake ../calligra #{std_cmake_parameters} -DCREATIVEONLY=ON -DEIGEN2_INCLUDE_DIR=''/usr/local/Cellar/eigen/2.0.17/include/eigen2/'"
     system "make install" # if this fails, try separate make/make install steps
   end
 
