@@ -8,6 +8,7 @@ class Digikam < Formula
   depends_on 'cmake' => :build
   depends_on 'kdelibs' => :build
   depends_on 'qjson' => :build
+  depends_on 'marble' => :build
 
   def install
     #mkdir '../build'
