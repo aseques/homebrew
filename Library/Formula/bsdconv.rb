@@ -2,8 +2,8 @@ require 'formula'
 
 class Bsdconv < Formula
   homepage 'https://github.com/buganini/bsdconv'
-  url 'https://github.com/buganini/bsdconv/tarball/7.3'
-  md5 '29a4a350f4c6986df628f4210f2cbb37'
+  url 'https://github.com/buganini/bsdconv/tarball/9.0'
+  sha1 '5b82f097575c9bbb0a1b809846c23f582da72bef'
 
   head 'https://github.com/buganini/bsdconv.git'
 

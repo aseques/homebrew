@@ -1,72 +1,86 @@
 require 'formula'
 
 class Qt < Formula
-  homepage 'http://qt.nokia.com/'
-  url 'http://get.qt.nokia.com/qt/source/qt-everywhere-opensource-src-4.8.1.tar.gz'
-  md5 '7960ba8e18ca31f0c6e4895a312f92ff'
+  homepage 'http://qt-project.org/'
+  url 'http://releases.qt-project.org/qt4/source/qt-everywhere-opensource-src-4.8.4.tar.gz'
+  sha1 'f5880f11c139d7d8d01ecb8d874535f7d9553198'
 
   bottle do
-    version 1
-    sha1 '6ab958b8fbc0595837f12339eaae1e050413ea62' => :snowleopard
-    sha1 '29615109d8bdf97bdd3a193cba0589e7c24db10a' => :lion
+    sha1 'a5f5efa78a682bf59ae9458b89a17513e912d272' => :mountainlion
+    sha1 'ae790ff205b90867f11c598d6e1f1b2a141fce14' => :lion
+    sha1 '4ad517d67b35668fb0f18d10ddff323de4ba6840' => :snowleopard
   end
 
   head 'git://gitorious.org/qt/qt.git', :branch => 'master'
 
+  env :std # Otherwise fails on SSE intrinsics
+
   fails_with :clang do
-    build 318
+    build 425
   end
 
-  def options
-    [
-      ['--with-qtdbus', "Enable QtDBus module."],
-      ['--with-qt3support', "Enable deprecated Qt3Support module."],
-      ['--with-demos-examples', "Enable Qt demos and examples."],
-      ['--with-debug-and-release', "Compile Qt in debug and release mode."],
-      ['--universal', "Build both x86_64 and x86 architectures."],
-    ]
-  end
+  option :universal
+  option 'with-qtdbus', 'Enable QtDBus module'
+  option 'with-qt3support', 'Enable deprecated Qt3Support module'
+  option 'with-demos-examples', 'Enable Qt demos and examples'
+  option 'with-debug-and-release', 'Compile Qt in debug and release mode'
+  option 'with-mysql', 'Enable MySQL plugin'
+  option 'developer', 'Compile and link Qt with developer options'
 
-  depends_on "d-bus" if ARGV.include? '--with-qtdbus'
-  depends_on 'sqlite' if MacOS.leopard?
+  depends_on :libpng
+
+  depends_on "d-bus" if build.include? 'with-qtdbus'
+  depends_on "mysql" if build.include? 'with-mysql'
+  depends_on 'sqlite' if MacOS.version == :leopard
+
+  def patches
+    # Fixes compilation failure on Leopard.
+    # https://bugreports.qt-project.org/browse/QTBUG-23258
+    if MacOS.version == :leopard
+      "http://bugreports.qt-project.org/secure/attachment/26712/Patch-Qt-4.8-for-10.5"
+    end
+  end
 
   def install
-    ENV.x11
     ENV.append "CXXFLAGS", "-fvisibility=hidden"
     args = ["-prefix", prefix,
             "-system-libpng", "-system-zlib",
-            "-L/usr/X11/lib", "-I/usr/X11/include",
             "-confirm-license", "-opensource",
             "-cocoa", "-fast" ]
 
-    # See: https://github.com/mxcl/homebrew/issues/issue/744
-    args << "-system-sqlite" if MacOS.leopard?
-    args << "-plugin-sql-mysql" if (HOMEBREW_CELLAR+"mysql").directory?
+    args << "-L#{MacOS::X11.prefix}/lib" << "-I#{MacOS::X11.prefix}/include" if MacOS::X11.installed?
 
-    if ARGV.include? '--with-qtdbus'
+    args << "-platform" << "unsupported/macx-clang" if ENV.compiler == :clang
+
+    # See: https://github.com/mxcl/homebrew/issues/issue/744
+    args << "-system-sqlite" if MacOS.version == :leopard
+
+    args << "-plugin-sql-mysql" if build.include? 'with-mysql'
+
+    if build.include? 'with-qtdbus'
       args << "-I#{Formula.factory('d-bus').lib}/dbus-1.0/include"
       args << "-I#{Formula.factory('d-bus').include}/dbus-1.0"
     end
 
-    if ARGV.include? '--with-qt3support'
+    if build.include? 'with-qt3support'
       args << "-qt3support"
     else
       args << "-no-qt3support"
     end
 
-    unless ARGV.include? '--with-demos-examples'
+    unless build.include? 'with-demos-examples'
       args << "-nomake" << "demos" << "-nomake" << "examples"
     end
 
-    if MacOS.prefer_64_bit? or ARGV.build_universal?
+    if MacOS.prefer_64_bit? or build.universal?
       args << '-arch' << 'x86_64'
     end
 
-    if !MacOS.prefer_64_bit? or ARGV.build_universal?
+    if !MacOS.prefer_64_bit? or build.universal?
       args << '-arch' << 'x86'
     end
 
-    if ARGV.include? '--with-debug-and-release'
+    if build.include? 'with-debug-and-release'
       args << "-debug-and-release"
       # Debug symbols need to find the source so build in the prefix
       mv "../qt-everywhere-opensource-src-#{version}", "#{prefix}/src"
@@ -75,8 +89,7 @@ class Qt < Formula
       args << "-release"
     end
 
-    # Needed for Qt 4.8.1 due to attempting to link moc with gcc.
-    ENV['LD'] = ENV.cxx
+    args << '-developer-build' if build.include? 'developer'
 
     system "./configure", *args
     system "make"

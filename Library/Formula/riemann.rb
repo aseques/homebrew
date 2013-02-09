@@ -2,8 +2,8 @@ require 'formula'
 
 class Riemann < Formula
   homepage 'http://aphyr.github.com/riemann/'
-  url 'http://aphyr.com/riemann/riemann-0.1.0.tar.bz2'
-  md5 '5b4d8f2d6a443ae2258b8c569e26ebc6'
+  url 'http://aphyr.com/riemann/riemann-0.1.5.tar.bz2'
+  sha1 '1146827d112e74c1ff7f72d0049ba8fea6887749'
 
   def shim_script
     <<-EOS.undent
@@ -19,8 +19,11 @@ class Riemann < Formula
   end
 
   def install
-    prefix.install %w{ README.markdown etc/riemann.config.guide }
-    etc.install Dir.glob('etc/*')
+    if (etc/'riemann.config').exist?
+      (prefix/'etc').install 'etc/riemann.config' => 'riemann.config.guide'
+    else
+      etc.install 'etc/riemann.config'
+    end
 
     # Install jars in libexec to avoid conflicts
     libexec.install Dir['*']

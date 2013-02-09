@@ -2,8 +2,8 @@ require 'formula'
 
 class Primesieve < Formula
   homepage 'http://code.google.com/p/primesieve/'
-  url 'http://primesieve.googlecode.com/files/primesieve-3.5-src.zip'
-  sha1 '044388377a976529a2fd51006d9f7b0ae02bd868'
+  url 'http://primesieve.googlecode.com/files/primesieve-4.1-src.zip'
+  sha1 'd759dd41a1aecf32e57573bc9f0473b2061b4bf8'
 
   def install
     system "make", "bin", "lib",

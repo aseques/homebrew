@@ -2,36 +2,33 @@ require 'formula'
 
 class Dart < Formula
   homepage 'http://www.dartlang.org/'
-  url 'https://gsdview.appspot.com/dart-editor-archive-integration/7696/dart-macos.zip'
-  version '7696'
-  md5 '27d9d1a0fba78f2caaea455162f7e166'
 
-  def shim_script target
-    <<-EOS.undent
-      #!/bin/bash
-      exec "#{target}" "$@"
-    EOS
+  if MacOS.prefer_64_bit?
+    url 'https://gsdview.appspot.com/dart-editor-archive-integration/18115/dartsdk-macos-64.zip'
+    sha1 '3cd57696a33e34cc2f33e1bb529c4bd4b59ebe6c'
+  else
+    url 'https://gsdview.appspot.com/dart-editor-archive-integration/18115/dartsdk-macos-32.zip'
+    sha1 '01c7f8022681e65814ed5e7751ad1a4dba686a04'
   end
+
+  version '18115'
 
   def install
     libexec.install Dir['*']
-
-    (bin+'dart').write shim_script("#{libexec}/bin/dart")
-    (bin+'dart2js').write shim_script("#{libexec}/bin/dart2js")
+    bin.install_symlink "#{libexec}/bin/dart"
+    bin.write_exec_script Dir["#{libexec}/bin/{pub,dart?*}"]
   end
 
-  def test
-    mktemp do
-      (Pathname.pwd+'sample.dart').write <<-EOS.undent
+  test do
+    (testpath/'sample.dart').write <<-EOS.undent
       void main() {
         Options opts = new Options();
         for (String arg in opts.arguments) {
           print(arg);
         }
       }
-      EOS
+    EOS
 
-      `#{bin}/dart sample.dart test message` == "test\nmessage\n"
-    end
+    `#{bin}/dart sample.dart test message` == "test\nmessage\n"
   end
 end

@@ -2,8 +2,13 @@ require 'formula'
 
 class Libmagic < Formula
   homepage 'http://www.darwinsys.com/file/'
-  url 'ftp://ftp.astron.com/pub/file/file-5.10.tar.gz'
-  sha1 '72fd435e78955ee122b7b3d323ff2f92e6263e89'
+  url 'ftp://ftp.astron.com/pub/file/file-5.12.tar.gz'
+  mirror 'http://fossies.org/unix/misc/file-5.12.tar.gz'
+  sha1 '782db8a2b37ff8ceada9d19c416eaf6c5b8297d4'
+
+  # Fixed upstream, should be in next release
+  # See http://bugs.gw.com/view.php?id=230
+  def patches; DATA; end if MacOS.version < :lion
 
   def install
     system "./configure", "--disable-dependency-tracking",
@@ -11,8 +16,23 @@ class Libmagic < Formula
                           "--enable-fsect-man5"
     system "make install"
 
-    # don't dupe this system utility and this formula is called "libmagic" not "file"
+    # Don't dupe this system utility
     rm bin/"file"
     rm man1/"file.1"
   end
 end
+
+__END__
+diff --git a/src/getline.c b/src/getline.c
+index e3c41c4..74c314e 100644
+--- a/src/getline.c
++++ b/src/getline.c
+@@ -76,7 +76,7 @@ getdelim(char **buf, size_t *bufsiz, int delimiter, FILE *fp)
+  }
+ }
+ 
+-ssize_t
++public ssize_t
+ getline(char **buf, size_t *bufsiz, FILE *fp)
+ {
+  return getdelim(buf, bufsiz, '\n', fp);

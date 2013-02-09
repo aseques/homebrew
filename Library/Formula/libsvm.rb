@@ -2,15 +2,13 @@ require 'formula'
 
 class Libsvm < Formula
   homepage 'http://www.csie.ntu.edu.tw/~cjlin/libsvm/'
-  url 'http://www.csie.ntu.edu.tw/~cjlin/libsvm/libsvm-3.12.tar.gz'
-  md5 'a1b1083fe69a4ac695da753f4c83ed42'
+  url 'http://www.csie.ntu.edu.tw/~cjlin/libsvm/oldfiles/libsvm-3.16.tar.gz'
+  sha1 '9274b96e4914bfbe0b3beae00e69f2293a3ca039'
 
   def install
-    inreplace 'Makefile', '-soname', '-install_name'
-    inreplace 'Makefile', 'libsvm.so.$(SHVER)', 'libsvm.$(SHVER).dylib'
-
     system "make", "CFLAGS=#{ENV.cflags}"
     system "make lib"
+    mv 'libsvm.so.2', 'libsvm.2.dylib'
     ln_s 'libsvm.2.dylib', 'libsvm.dylib'
 
     bin.install 'svm-scale', 'svm-train', 'svm-predict'
